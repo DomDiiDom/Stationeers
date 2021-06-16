@@ -44,7 +44,7 @@ j loop
 
 openOut:
 s VentOut On 1
-blez r0 20000 openOut1
+blez r0 0.1 openOut1
 j loop
 
 openOut1:
