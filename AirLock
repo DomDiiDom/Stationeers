@@ -1,0 +1,56 @@
+alias DoorOut d0
+alias DoorIn d1
+alias VentIn d2
+alias VentOut d3
+alias Sensor d4
+alias toggle d5
+
+alias pressure r0
+alias hasToggled r1
+alias outerPressure r2
+alias innerPressure r3
+alias state r4
+
+move r4 99
+
+s DoorIn Lock 0
+
+loop:
+l r0 d4 Pressure
+l r1 d5 Activate
+#s DoorIn Open 0
+#s DoorOut Open 0
+
+beq r4 99 init
+beq r4 98 openOut
+beq r1 1 beginToggle
+
+j loop
+
+beginToggle:
+beq r4 1 toggleIn
+j loop
+
+toggleIn:
+s DoorIn Open 0
+s DoorOut Open 0
+j loop
+
+init:
+s DoorIn Open 0
+s DoorOut Open 0
+move r4 98
+j loop
+
+openOut:
+s VentOut On 1
+blez r0 20000 openOut1
+j loop
+
+openOut1:
+s VentOut On 0
+s DoorIn Open 1
+#s DoorIn Lock 1
+#s DoorOut Lock 1
+move r4 1
+j loop
