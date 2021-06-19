@@ -3,54 +3,110 @@ alias DoorIn d1
 alias VentIn d2
 alias VentOut d3
 alias Sensor d4
-alias toggle d5
-
+alias AirlockState d5
 alias pressure r0
-alias hasToggled r1
 alias outerPressure r2
 alias innerPressure r3
 alias state r4
-
-move r4 99
-
-s DoorIn Lock 0
-
+alias hasToggled r5
 loop:
 l r0 d4 Pressure
-l r1 d5 Activate
-#s DoorIn Open 0
-#s DoorOut Open 0
-
-beq r4 99 init
-beq r4 98 openOut
-beq r1 1 beginToggle
-
+l state d5 Setting
+lb r5 491845673 Activate 3
+beq state 1 init1
+beq state 2 init2
+beq state 3 init3
+beq state 4 init4
+beq r5 1 toggle
+beq state 11 toggleOut1
+beq state 12 toggleOut2
+beq state 13 toggleOut4
+beq state 21 toggleIn1
+beq state 22 toggleIn2
+beq state 23 toggleIn3
+beq state 24 toggleIn5
 j loop
-
-beginToggle:
-beq r4 1 toggleIn
+toggle:
+beq state 10 toggleToIn
+beq state 20 toggleToOut
 j loop
-
-toggleIn:
-s DoorIn Open 0
+toggleToIn:
+move state 21
+j save
+toggleIn1:
 s DoorOut Open 0
-j loop
-
-init:
-s DoorIn Open 0
-s DoorOut Open 0
-move r4 98
-j loop
-
-openOut:
+move state 22
+j save
+toggleIn2:
 s VentOut On 1
-blez r0 0.1 openOut1
+s VentOut Mode 1
+move state 23
+j save
+toggleIn3:
+beqz pressure toggleIn4
 j loop
-
-openOut1:
+toggleIn4:
 s VentOut On 0
+move state 24
+j save
+toggleIn5:
+s VentIn On 1
+s VentIn Mode 0
+beq r5 1 toggleIn6
+bgt pressure 10 toggleIn6
+j save
+toggleIn6:
+s VentIn On 0
 s DoorIn Open 1
-#s DoorIn Lock 1
-#s DoorOut Lock 1
-move r4 1
+move state 20
+j save
+toggleToOut:
+move state 11
+j save
+toggleOut1:
+s DoorIn Open 0
+move state 12
+j save
+toggleOut2:
+s VentIn On 1
+s VentIn Mode 1
+beqz pressure toggleOut3
+j save
+toggleOut3:
+s VentIn On 0
+move state 13
+j save
+toggleOut4:
+s VentOut On 1
+s VentOut Mode 0
+bgt pressure 10 toggleOut5
+j save
+toggleOut5:
+s VentOut On 0
+s DoorOut Open 1
+move state 10
+j save
+init1:
+s DoorIn Open 0
+s DoorOut Open 0
+move state 10
+j save
+init2:
+s VentOut On 1
+s VentOut Mode 1
+beqz pressure init4
+j save
+init3:
+move state 3
+s VentOut On 1
+s VentOut Mode 0
+beq r5 1 init4
+bgt pressure 10 init4
+j save
+init4:
+move state 10
+j save
+
+save:
+s d5 Setting state
 j loop
